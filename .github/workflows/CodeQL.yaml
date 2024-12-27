@@ -1,0 +1,58 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**/.*'
+      - '**/ci.yml'
+      - '**/CODEOWNERS'
+      - '**/dependabot.yml'
+      - '**/*.json'
+      - '**/LICENSE'
+      - '**/*.md'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**/.*'
+      - '**/ci.yml'
+      - '**/CODEOWNERS'
+      - '**/dependabot.yml'
+      - '**/*.json'
+      - '**/LICENSE'
+      - '**/*.md'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: cpp
+
+    - name: Resolve Build Environment
+      uses: github/codeql-action/resolve-environment@v3
+      with:
+        language: cpp
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:cpp"

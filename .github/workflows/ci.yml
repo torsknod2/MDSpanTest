@@ -1,0 +1,153 @@
+# Copyright 2025 Torsten Knodt
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http: //www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: read
+  id-token: write
+  packages: write
+  pages: write
+
+jobs:
+  build:
+    runs-on:
+      - self-hosted
+      - ubuntu-24.04
+    steps:
+      - name: Temporarily move /var/lib/docker/ to GitHub workspace until mounted.
+        if: runner.name != 'tmk-wkst-4'
+        run: sudo mv /var/lib/docker/ "${GITHUB_WORKSPACE}/docker"
+
+      - name: Maximize build disk space
+        if: runner.name != 'tmk-wkst-4'
+        # This has to be before the checkout, because else the checked out code will be deleted by this action.
+        uses: easimon/maximize-build-space@v10
+        with:
+          build-mount-path: '/var/lib/docker/'
+          remove-android: true
+          remove-dotnet: true
+          remove-haskell: true
+          swap-size-mb: 4
+
+      - name: Restore /var/lib/docker/
+        if: runner.name != 'tmk-wkst-4'
+        run: sudo sh -c "mv ${GITHUB_WORKSPACE}/docker/* /var/lib/docker"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
+      # - name: Create Buildx builder
+      #   run: |
+      #     docker buildx rm -f mybuilder || true
+      #     docker buildx create --name mybuilder --driver docker-container --use
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Determine Docker image tag
+        id: image_tag
+        run: |
+          DEVCONTAINER_TAG=$(git describe --tags --always $(git log --oneline -n1 .devcontainer | cut -f1 -d" "))
+          if [ $? -ne 0 ]; then
+            echo "Failed to determine the tag. Skipping image push."
+            exit 1
+          fi
+          echo "devcontainer_tag=${DEVCONTAINER_TAG}" >> $GITHUB_ENV
+
+      # - name: Build and push Docker image
+      #   if: success()
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .devcontainer
+      #     builder: mybuilder
+      #     push: true
+      #     tags: |
+      #       ghcr.io/torsknod2/mdspantest-devcontainer:${{ env.devcontainer_tag }}
+      #       ${{ github.ref == 'refs/heads/main' && 'ghcr.io/torsknod2/mdspantest-devcontainer:latest' || '' }}
+      #     cache-from: type=local,src=/tmp/.buildx-cache
+      #     cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Run devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/torsknod2/mdspantest-devcontainer
+          imageTag: ${{ env.devcontainer_tag }}${{ github.ref == 'refs/heads/main' && ',latest' || '' }}
+          cacheFrom: |
+            type=local,src=/tmp/.buildx-cache
+            type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
+          runCmd: |
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-gcc-14 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-g++-14
+            cmake --build build --verbose --parallel
+            cd build
+            ctest --output-on-failure --output-log ctest.log.txt --output-junit ctest.junit.xml -j -R MDSpanTest
+            find GTestOutputDir -type d -exec mmv -r "{}/*.xml" "#1.junit.xml" \;
+            mv ctest.log.txt ctest.junit.xml GTestOutputDir
+            gcovr -r .. --decisions --calls --cobertura GTestOutputDir/coverage.cobertura.xml --html-details GTestOutputDir/coverage.html --jacoco GTestOutputDir/coverage.jacoco.xml --json GTestOutputDir/coverage.json --json-pretty --json-summary GTestOutputDir/coverage.summary.json --json-summary-pretty --lcov GTestOutputDir/coverage.lcov --sonarqube GTestOutputDir/coverage.sonarqube --txt GTestOutputDir/coverage.txt --print-summary --fail-under-line 100 --fail-under-branch 100 --fail-under-decision 100 --fail-under-function 100 -j --gcov-executable /usr/bin/x86_64-linux-gnu-gcov-14
+# TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
+
+      - name: Convert JUnit to HTML
+        uses: mikepenz/action-junit-report@v3
+        if: success() || failure()
+        with:
+          report_paths: build/GTestOutputDir/**/*.junit.xml
+          fail_on_failure: true
+          include_passed: true
+
+      - name: Upload reports/ results
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: all
+          path: build/GTestOutputDir
+
+      # - name: Upload GitHub Pages Artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: build/GTestOutputDir
+
+      # - name: Deploy to GitHub Pages
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: actions/deploy-pages@v4
