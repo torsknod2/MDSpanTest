@@ -47,6 +47,7 @@ jobs:
           name: SARIF file
           path: results.sarif
           retention-days: 5
+          compression-level: 9
 
       # Upload the results to GitHub's code scanning dashboard (optional).
       # Commenting out will disable upload of results to your repo's Code Scanning dashboard
