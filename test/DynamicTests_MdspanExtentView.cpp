@@ -21,64 +21,67 @@ limitations under the License.
 #include "DynamicTestsBase.hpp"
 
 TYPED_TEST(DynamicMDSpanExtentTest, DefaultConstructor) {
-  this->setArrayContent();
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view();
-  EXPECT_EQ(view.extent(), 0);
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> View;
+  FAIL()
+      << "Review requirements to a default constructed view beside being "
+         "assignable and so on. Perhaps the right thing is just to check that, "
+         "but I would like to be sure that the view is in the right state "
+         "before.";
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, ConstructFromMDSpan) {
   this->setArrayContent();
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view(
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> view(
       this->vertices_mdspan);
-  EXPECT_EQ(view.extent(), 5);
+  FAIL() << "Check for equality of all values once iteration is working";
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, CopyConstructor) {
   this->setArrayContent();
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
       this->vertices_mdspan);
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> copy(original);
-  EXPECT_EQ(copy.extent(), 7);
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> copy(
+      original);
+  FAIL() << "Check for equality of all values once iteration is working";
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, AssignmentOperator) {
   this->setArrayContent();
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
       this->vertices_mdspan);
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> assigned();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> assigned;
   assigned = original;
-  EXPECT_EQ(assigned.extent(), 3);
+  FAIL() << "Check for equality of all values once iteration is working";
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, MoveConstructor) {
   this->setArrayContent();
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
       this->vertices_mdspan);
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved(
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved(
       std::move(original));
-  EXPECT_EQ(moved.extent(), 4);
-  EXPECT_EQ(original.extent(),
-            0); // Assuming moved-from object is set to default state
+  FAIL() << "Check for correct values \"in\" new object and check for "
+            "\"default\" values in moved-from object";
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, MoveAssignmentOperator) {
   this->setArrayContent();
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
       this->vertices_mdspan);
-  mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved;
   moved = std::move(original);
-  EXPECT_EQ(moved.extent(), 6);
-  EXPECT_EQ(original.extent(),
-            0); // Assuming moved-from object is set to default state
+  FAIL() << "Check for correct values \"in\" new object and check for "
+            "\"default\" values in moved-from object";
 }
 
+/* TODO Why did I add them? Or was this CoPilot and I missed it?
 TYPED_TEST(DynamicMDSpanExtentTest, EqualityOperator) {
   this->setArrayContent();
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> view1(
       this->vertices_mdspan);
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> view2(
       this->vertices_mdspan);
-  EXPECT_TRUE(view1 == view2);
+  EXPECT_EQ(view1, view2);
 }
 
 TYPED_TEST(DynamicMDSpanExtentTest, InequalityOperator) {
@@ -86,8 +89,10 @@ TYPED_TEST(DynamicMDSpanExtentTest, InequalityOperator) {
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> view1(
       this->vertices_mdspan);
   mdspan_extent_view<decltype(this->vertices_mdspan), 1> view2(9);
-  EXPECT_TRUE(view1 != view2);
+  EXPECT_NE(view1, view2);
 }
+
+*/
 
 TYPED_TEST(DynamicMDSpanExtentTest, SizeCorrect) {
   this->setArrayContent();
@@ -100,31 +105,4 @@ TYPED_TEST(DynamicMDSpanExtentTest, SizeCorrect) {
   FAIL() << "FIXME This is not working, because it claims that the referenze "
             "to size is ambiguous. I guess this has to do with the template "
             "template parameters I require, but I am not really sure.";
-}
-
-TYPED_TEST(DynamicMDSpanExtentTest, GenerateTest) {
-  FAIL()
-      << "FIXME Beside not matching current TestArrayContent implementation, "
-         "this fails because the assignment to the returned mdspan is only "
-         "possible from another mdspan and not replacing the references "
-         "values. Having opertor[] returning something which allows this, "
-         "would also resolve the problem, but it does not support "
-         "std::experimental::full_extent as index.";
-  /*
-std::generate(
-    mdspan_extent_iterator<decltype(vertices_mdspan), 1>(vertices_mdspan),
-    mdspan_extent_iterator<decltype(vertices_mdspan), 1>(
-        vertices_mdspan, vertices_mdspan.extent(1)),
-    []() -> std::tuple<float, float> {
-      auto fibonacci_generator = [a = 0.0f, b = 1.0f]() mutable -> float {
-        float next = a + b;
-        a = b;
-        b = next;
-        return a;
-      };
-      return std::make_tuple<float, float>(fibonacci_generator(),
-                                           fibonacci_generator());
-    });
-TestArrayContent();
-*/
 }

@@ -16,9 +16,10 @@ limitations under the License.
 
 #pragma once
 
-#include <array>
-#include <limits>
-#include <tuple>
+#include <concepts>
+#include <functional>
+#include <optional>
+#include <type_traits>
 #include <utility>
 
 #include <experimental/mdspan>
@@ -185,6 +186,8 @@ private:
   typename MDS::index_type index = static_cast<typename MDS::index_type>(0);
 
 public:
+  mdspan_extent_view() = default;
+
   mdspan_extent_view(const mdspan_extent_view &other) = default;
 
   mdspan_extent_view(MDS &&mdspan, const typename MDS::index_type index =
@@ -195,6 +198,11 @@ public:
                      const typename MDS::index_type index =
                          static_cast<typename MDS::index_type>(0))
       : mdspan(mdspan), index(index) {}
+
+  mdspan_extent_view &operator=(const mdspan_extent_view &other) = default;
+
+  mdspan_extent_view &operator=(mdspan_extent_view &&other) noexcept = default;
+
   mdspan_extent_iterator<MDS, EXTENT> begin() const {
     return mdspan_extent_iterator<MDS, EXTENT>(mdspan.value());
   }
@@ -202,6 +210,16 @@ public:
   mdspan_extent_iterator<MDS, EXTENT> end() const {
     return mdspan_extent_iterator<MDS, EXTENT>(
         mdspan.value(), mdspan.value().get().extent(EXTENT));
+  }
+
+  constexpr typename MDS::index_type size() const {
+    return mdspan.has_value() ? mdspan.value().get().extent(EXTENT) : 0;
+  }
+
+  constexpr typename MDS::index_type ssize() const
+    requires std::is_signed_v<typename MDS::index_type>
+  {
+    return size();
   }
 };
 

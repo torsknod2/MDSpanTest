@@ -31,11 +31,11 @@ TEST(StaticMDSpanExtentView, IsRange) {
 }
 
 TEST(StaticMDSpanExtentView, IsSizedRange) {
-  ASSERT_TRUE(static_cast<bool>(
+  static_assert(
       std::ranges::sized_range<mdspan_extent_view<
           std::experimental::mdspan<
               float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
-          1>>));
+          1>>);
 }
 
 TEST(StaticMDSpanExtentView, IsBorrowedRange) {

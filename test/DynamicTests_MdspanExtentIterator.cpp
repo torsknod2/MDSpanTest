@@ -17,8 +17,8 @@ limitations under the License.
 #include <algorithm>
 #include <execution>
 #include <iterator>
-#include <type_traits>
 #include <ranges>
+#include <type_traits>
 
 #include <gtest/gtest.h>
 
@@ -77,15 +77,22 @@ TYPED_TEST(DynamicMDSpanExtentTest, CanDoSingleAssignment) {
   ASSERT_EQ((*iterator).size(), 10);
   ASSERT_EQ((*iterator).extent(0), 2);
   ASSERT_EQ((*iterator).extent(1), 5);
-  // ASSERT_EQ((*iterator).extent(2), 0);
   /* FIXME This is really ugly, but due to what I described in GenerateTest not
    * better possible apparently. */
-  auto fibonacciGenerator = this->fibonacciGenerator();
+  auto FibonacciGenerator = this->fibonacciGenerator();
+  FAIL() << "Need indirectly readable iterators first";
+  /*
   std::ranges::for_each(
-      std::views::zip(this->fibonacciGenerator(2u * 3u * 5u),
-                      std::views::cartesian_product(
-                          std::views::counted(iterator, 3),
-                          std::views::iota(0, 2), std::views::iota(0, 5))),
+      std::views::zip(
+          this->fibonacciGenerator(this->vertices.size()),
+          std::views::cartesian_product(
+              std::views::counted(iterator, this->vertices.extent(1)),
+              std::views::iota(
+                  static_cast<decltype(this->vertices.extent(0))>(0),
+                  this->vertices.extent(0)),
+              std::views::iota(
+                  static_cast<decltype(this->vertices.extent(0))>(2),
+                  this->vertices.extent(2)))),
       [](const std::tuple<
           TypeParam, std::tuple<std::size_t, decltype(*iterator), std::size_t>,
           TypeParam> &tuple) {
@@ -95,6 +102,7 @@ TYPED_TEST(DynamicMDSpanExtentTest, CanDoSingleAssignment) {
         const auto &element = std::get<1>(axes);
         element[std::get<0>(axes), std::get<2>(axes)] = value;
       });
+      */
   this->testArrayContent();
 }
 
