@@ -12,6 +12,7 @@ It's my first time trying to contribute to the standard library.
 - [![Dependabot Updates](https://github.com/torsknod2/MDSpanTest/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/torsknod2/MDSpanTest/actions/workflows/dependabot/dependabot-updates)
 - [![C++ CI](https://github.com/torsknod2/MDSpanTest/actions/workflows/ci.yml/badge.svg)](https://github.com/torsknod2/MDSpanTest/actions/workflows/ci.yml)
 - [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/torsknod2/MDSpanTest/badge)](https://scorecard.dev/viewer/?uri=github.com/torsknod2/MDSpanTest)
+- [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/9894/badge)](https://bestpractices.coreinfrastructure.org/projects/9894)
 
 ## Project Structure
 
