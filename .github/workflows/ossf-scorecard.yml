@@ -5,7 +5,10 @@ on:
     branches:
     - main
 
-permissions: read-all
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
 
 jobs:
   analysis:
