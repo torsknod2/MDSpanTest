@@ -1,3 +1,5 @@
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/1/badge)](https://bestpractices.coreinfrastructure.org/projects/1)
+
 # std::(experimental::)mdspan testing
 
 This repository contains my trial & error to understand std::(experimental::)mdspan well enough to use it with std::linalg.
