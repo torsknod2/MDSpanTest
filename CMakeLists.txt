@@ -175,13 +175,19 @@ install(TARGETS mdspan_header)
 add_executable(BenchmarkMain ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/BenchmarkMain.cpp)
 target_link_libraries(BenchmarkMain PRIVATE benchmark::benchmark mdspan_header)
 
-add_executable(TestMain ${CMAKE_CURRENT_SOURCE_DIR}/test/TestMain.cpp)
-target_link_libraries(TestMain PRIVATE GTest::gtest GTest::gtest_main std::mdspan mdspan_header)
-
 include(CTest)
 enable_testing()
 include(GoogleTest)
-gtest_discover_tests(TestMain TEST_PREFIX MDSpanTestMain_ XML_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/GTestOutputDir/MDSpanTestMain)
+
+file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
+foreach(TEST_SOURCE ${TEST_SOURCES})
+    get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SOURCE})
+    target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main std::mdspan mdspan_header)
+    gtest_discover_tests(${TEST_NAME}
+        TEST_PREFIX MDSpanTest_${TEST_NAME}_
+        XML_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/GTestOutputDir/${TEST_NAME})
+endforeach()
 
 find_package(Doxygen OPTIONAL_COMPONENTS dot mscgen dia)
 if(Doxygen_FOUND)
