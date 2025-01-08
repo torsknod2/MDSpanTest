@@ -43,7 +43,7 @@ jobs:
       matrix:
         CMAKE_C_COMPILER:
         - x86_64-linux-gnu-gcc-14
-        - clang-cl-18
+        - clang-18
         include:
           - CMAKE_C_COMPILER: x86_64-linux-gnu-gcc-14
             CMAKE_CXX_COMPILER: x86_64-linux-gnu-g++-14
@@ -51,8 +51,8 @@ jobs:
             CMAKE_CXX_COMPILER_OFFLOAD:
               - default
               - disable
-          - CMAKE_C_COMPILER: clang-cl-18
-            CMAKE_CXX_COMPILER: clang-cl-18
+          - CMAKE_C_COMPILER: clang-18
+            CMAKE_CXX_COMPILER: clang-18
     runs-on:
       - self-hosted
       - ubuntu-24.04
@@ -152,7 +152,7 @@ jobs:
             type=local,src=/tmp/.buildx-cache
             type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
           runCmd: |
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_C_COMPILER}} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_CXX_COMPILER}} ${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD && format('-DCMAKE_CXX_COMPILER_OFFLOAD:STRING={0}', matrix.CMAKE_CXX_COMPILER_OFFLOAD) || '' }} &&
+            cmake -G "Ninja Multi-Config" -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_C_COMPILER}} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_CXX_COMPILER}} ${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD && format('-DCMAKE_CXX_COMPILER_OFFLOAD:STRING={0}', matrix.CMAKE_CXX_COMPILER_OFFLOAD) || '' }} &&
             cmake --build build --verbose --parallel &&
             cd build && (
             ctest --output-on-failure --output-log ctest.log.txt --output-junit ctest.junit.xml -j -R MDSpanTest
