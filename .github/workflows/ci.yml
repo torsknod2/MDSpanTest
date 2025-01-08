@@ -152,13 +152,14 @@ jobs:
             type=local,src=/tmp/.buildx-cache
             type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
           runCmd: |
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_C_COMPILER}} -DCMAKE_CXX_COMPILER:FILEPATH=${{matrix.CMAKE_CXX_COMPILER}} ${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD && format('-DCMAKE_CXX_COMPILER_OFFLOAD:STRING={0}', matrix.CMAKE_CXX_COMPILER_OFFLOAD) || '' }}
-            cmake --build build --verbose --parallel
-            cd build
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_C_COMPILER}} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_CXX_COMPILER}} ${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD && format('-DCMAKE_CXX_COMPILER_OFFLOAD:STRING={0}', matrix.CMAKE_CXX_COMPILER_OFFLOAD) || '' }} &&
+            cmake --build build --verbose --parallel &&
+            cd build && (
             ctest --output-on-failure --output-log ctest.log.txt --output-junit ctest.junit.xml -j -R MDSpanTest
             find GTestOutputDir -type d -exec mmv -r "{}/*.xml" "#1.junit.xml" \;
             mv ctest.log.txt ctest.junit.xml GTestOutputDir
-            ${{matrix.GCOV_EXECUTABLE && format('gcovr -r .. --decisions --calls --cobertura GTestOutputDir/coverage.cobertura.xml --html-details GTestOutputDir/coverage.html --jacoco GTestOutputDir/coverage.jacoco.xml --json GTestOutputDir/coverage.json --json-pretty --json-summary GTestOutputDir/coverage.summary.json --json-summary-pretty --lcov GTestOutputDir/coverage.lcov --sonarqube GTestOutputDir/coverage.sonarqube --txt GTestOutputDir/coverage.txt --print-summary --fail-under-line 100 --fail-under-branch 100 --fail-under-decision 100 --fail-under-function 100 -j --gcov-executable /usr/bin/[0]', matrix.GCOV_EXECUTABLE) || 'true'}}
+            ${{matrix.GCOV_EXECUTABLE && format('gcovr -r .. --decisions --calls --cobertura GTestOutputDir/coverage.cobertura.xml --html-details GTestOutputDir/coverage.html --jacoco GTestOutputDir/coverage.jacoco.xml --json GTestOutputDir/coverage.json --json-pretty --json-summary GTestOutputDir/coverage.summary.json --json-summary-pretty --lcov GTestOutputDir/coverage.lcov --sonarqube GTestOutputDir/coverage.sonarqube --txt GTestOutputDir/coverage.txt --print-summary --fail-under-line 100 --fail-under-branch 100 --fail-under-decision 100 --fail-under-function 100 -j --gcov-executable /usr/bin/[0]', matrix.GCOV_EXECUTABLE) || ''}}
+            )
 # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
 
       - name: Perform CodeQL Analysis
