@@ -1,78 +1,113 @@
-// StaticTests_MdspanExtentIterator.cpp
+/*
+Copyright 2025 Torsten Knodt
 
-#include <iostream>
-#include <vector>
-#include <cassert>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-// A simple iterator class for demonstration purposes
-template<typename T>
-class SimpleIterator {
-public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type = T;
-    using difference_type = std::ptrdiff_t;
-    using pointer = T*;
-    using reference = T&;
+http: //www.apache.org/licenses/LICENSE-2.0
 
-    SimpleIterator(pointer ptr) : m_ptr(ptr) {}
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
-    reference operator*() const { return *m_ptr; }
-    pointer operator->() { return m_ptr; }
+#include <StaticTests.hpp>
 
-    // Prefix increment
-    SimpleIterator& operator++() { 
-        m_ptr++; 
-        return *this; 
-    }  
+#include <gtest/gtest.h>
 
-    // Postfix increment
-    SimpleIterator operator++(int) { 
-        SimpleIterator tmp = *this; 
-        ++(*this); 
-        return tmp; 
-    }
+#include <mdspan_extensions.hpp>
 
-    friend bool operator==(const SimpleIterator& a, const SimpleIterator& b) { 
-        return a.m_ptr == b.m_ptr; 
-    }
+enum class Precondition { Init, Started, Passed };
 
-    friend bool operator!=(const SimpleIterator& a, const SimpleIterator& b) { 
-        return a.m_ptr != b.m_ptr; 
-    }
+static Precondition inputOrOutputIteratorTestStatus = Precondition::Init;
+static Precondition indirectlyReadableTestStatus = Precondition::Init;
+static Precondition indirectlyWriteableTestStatus = Precondition::Init;
 
-private:
-    pointer m_ptr;
-};
-
-// Static test cases using the SimpleIterator
-void staticTestCases() {
-    std::vector<int> data = {1, 2, 3, 4, 5};
-    SimpleIterator<int> begin(data.data());
-    SimpleIterator<int> end(data.data() + data.size());
-
-    // Test case 1: Check if the iterator correctly iterates over the elements
-    int expectedValue = 1;
-    for (auto it = begin; it != end; ++it) {
-        assert(*it == expectedValue);
-        expectedValue++;
-    }
-
-    // Test case 2: Check if the iterator correctly identifies the end
-    SimpleIterator<int> it = begin;
-    for (size_t i = 0; i < data.size(); ++i) {
-        ++it;
-    }
-    assert(it == end);
-
-    // Test case 3: Check if dereferencing works correctly
-    it = begin;
-    assert(*it == 1);
-    ++it;
-    assert(*it == 2);
+TEST(StaticMDSpanExtentIterator, BeginIsAnInputOrOutputIterator) {
+  inputOrOutputIteratorTestStatus = Precondition::Started;
+  static_assert(
+      std::input_or_output_iterator<mdspan_extent_iterator<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>);
+  inputOrOutputIteratorTestStatus = Precondition::Passed;
 }
 
-int main() {
-    staticTestCases();
-    std::cout << "All static test cases passed." << std::endl;
-    return 0;
+TEST(StaticMDSpanExtentIterator, BeginIsIndirectlyReadable) {
+  indirectlyReadableTestStatus = Precondition::Started;
+  ASSERT_TRUE(static_cast<bool>(
+      std::indirectly_readable<mdspan_extent_iterator<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>));
+  indirectlyReadableTestStatus = Precondition::Passed;
+}
+
+TEST(StaticMDSpanExtentIterator, BeginIsIndirectlyWriteable) {
+  indirectlyWriteableTestStatus = Precondition::Started;
+  ASSERT_TRUE(static_cast<bool>(
+      std::indirectly_writable<
+          mdspan_extent_iterator<
+              std::experimental::mdspan<
+                  float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+              1>,
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 5>>>));
+  indirectlyWriteableTestStatus = Precondition::Passed;
+}
+
+TEST(StaticMDSpanExtentIterator, EndIsSentinelForBegin) {
+  if (inputOrOutputIteratorTestStatus == Precondition::Started)
+    GTEST_SKIP() << "The test for input_or_output_iterator failed, so the test "
+                    "for input_iterator does not make sense and gets skipped.";
+  else
+    static_assert(
+        std::sentinel_for<
+            mdspan_extent_iterator<
+                std::experimental::mdspan<
+                    float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+                1>,
+            mdspan_extent_iterator<
+                std::experimental::mdspan<
+                    float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+                1>>);
+}
+
+TEST(StaticMDSpanExtentIterator, BeginIsAnInputIterator) {
+  if (inputOrOutputIteratorTestStatus == Precondition::Started &&
+      indirectlyReadableTestStatus == Precondition::Started)
+    GTEST_SKIP() << "The test for input_or_output_iterator and/ or "
+                    "indirectly_readble failed, so the test "
+                    "for input_iterator does not make sense and gets skipped.";
+  else
+    ASSERT_TRUE(static_cast<bool>(
+        std::input_iterator<mdspan_extent_iterator<
+            std::experimental::mdspan<
+                float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+            1>>));
+}
+
+TEST(StaticMDSpanExtentIterator, BeginIsAnOutputIterator) {
+  if (inputOrOutputIteratorTestStatus == Precondition::Started &&
+      indirectlyWriteableTestStatus == Precondition::Started)
+    GTEST_SKIP() << "The test for input_or_output_iterator and/ or "
+                    "indirectly_writeable failed, so the test "
+                    "for output_iterator does not make sense and gets skipped.";
+  else {
+    ASSERT_TRUE(static_cast<bool>(
+        std::output_iterator<
+            mdspan_extent_iterator<
+                std::experimental::mdspan<
+                    float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+                1>,
+            std::experimental::mdspan<
+                float, std::experimental::extents<std::intmax_t, 2, 5>>>));
+    FAIL()
+        << "FIXME Long error message when changing to a static assertion, but "
+           "I do not fully get it frankly. I guess what it wants to say me is "
+           "basically why GenerateTest obviously has to fail.";
+  }
 }

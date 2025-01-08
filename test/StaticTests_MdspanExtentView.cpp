@@ -1,50 +1,50 @@
-// StaticTests_MdspanExtentView.cpp
+/*
+Copyright 2025 Torsten Knodt
 
-#include <iostream>
-#include <ranges>
-#include <cassert>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-void test_extent_view() {
-    // Test case 1: Check if the extent view correctly reflects the size of the range
-    {
-        std::array<int, 5> arr = {1, 2, 3, 4, 5};
-        auto extent_view = std::ranges::views::all(arr);
-        assert(extent_view.size() == 5);
-    }
+http: //www.apache.org/licenses/LICENSE-2.0
 
-    // Test case 2: Check if the extent view works with an empty range
-    {
-        std::array<int, 0> arr = {};
-        auto extent_view = std::ranges::views::all(arr);
-        assert(extent_view.size() == 0);
-    }
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
-    // Test case 3: Check if the extent view works with a subrange
-    {
-        std::array<int, 5> arr = {1, 2, 3, 4, 5};
-        auto subrange = std::ranges::subrange(arr.begin(), arr.begin() + 3);
-        auto extent_view = std::ranges::views::all(subrange);
-        assert(extent_view.size() == 3);
-    }
+#include <StaticTests.hpp>
 
-    // Test case 4: Check if the extent view works with a different container
-    {
-        std::vector<int> vec = {1, 2, 3, 4, 5, 6};
-        auto extent_view = std::ranges::views::all(vec);
-        assert(extent_view.size() == 6);
-    }
+#include <gtest/gtest.h>
 
-    // Test case 5: Check if the extent view works with a string
-    {
-        std::string str = "hello";
-        auto extent_view = std::ranges::views::all(str);
-        assert(extent_view.size() == 5);
-    }
+#include <mdspan_extensions.hpp>
 
-    std::cout << "All static extent view tests passed!" << std::endl;
+TEST(StaticMDSpanExtentView, MDSpanExtentViewIsRange) {
+  static_assert(
+      std::ranges::range<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>);
 }
 
-int main() {
-    test_extent_view();
-    return 0;
+TEST(StaticMDSpanExtentView, MDSpanExtentViewIsView) {
+  static_assert(
+      std::ranges::view<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>);
+}
+
+TEST(StaticMDSpanExtentView, IsAnOutputRange) {
+  ASSERT_TRUE(static_cast<bool>(
+      std::ranges::output_range<
+          mdspan_range_submdspans<
+              std::experimental::mdspan<
+                  float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+              1>,
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 5>>>));
+  FAIL() << "FIXME Root-Cause for this to fail are the iterators, see above. "
+            "Also see the comments in the std::begin and std::end overrides.";
 }
