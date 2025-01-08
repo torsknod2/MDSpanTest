@@ -14,6 +14,10 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "devcontainers"
+    assignees:
+      - "torsknod2"
+    reviewers:
+      - "torsknod2"
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
