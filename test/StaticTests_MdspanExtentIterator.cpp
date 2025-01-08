@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <StaticTests.hpp>
+#include <iterator>
 
 #include <gtest/gtest.h>
 
 #include <mdspan_extensions.hpp>
+
+#include "StaticTests.hpp"
 
 enum class Precondition { Init, Started, Passed };
 

@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <StaticTests.hpp>
+#include <ranges>
 
 #include <gtest/gtest.h>
 
 #include <mdspan_extensions.hpp>
 
-TEST(StaticMDSpanExtentView, MDSpanExtentViewIsRange) {
+#include "StaticTests.hpp"
+
+TEST(StaticMDSpanExtentView, IsRange) {
   static_assert(
       std::ranges::range<mdspan_extent_view<
           std::experimental::mdspan<
@@ -28,7 +30,31 @@ TEST(StaticMDSpanExtentView, MDSpanExtentViewIsRange) {
           1>>);
 }
 
-TEST(StaticMDSpanExtentView, MDSpanExtentViewIsView) {
+TEST(StaticMDSpanExtentView, IsSizedRange) {
+  ASSERT_TRUE(static_cast<bool>(
+      std::ranges::sized_range<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>));
+}
+
+TEST(StaticMDSpanExtentView, IsBorrowedRange) {
+  static_assert(
+      std::ranges::borrowed_range<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>);
+}
+
+TEST(StaticMDSpanExtentView, IsCommonRange) {
+  static_assert(
+      std::ranges::common_range<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>);
+}
+
+TEST(StaticMDSpanExtentView, IsView) {
   static_assert(
       std::ranges::view<mdspan_extent_view<
           std::experimental::mdspan<
@@ -36,15 +62,23 @@ TEST(StaticMDSpanExtentView, MDSpanExtentViewIsView) {
           1>>);
 }
 
+TEST(StaticMDSpanExtentView, IsAnInputRange) {
+  ASSERT_TRUE(static_cast<bool>(
+      std::ranges::input_range<mdspan_extent_view<
+          std::experimental::mdspan<
+              float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
+          1>>));
+  FAIL() << "FIXME Root-Cause for this to fail is the iterator.";
+}
+
 TEST(StaticMDSpanExtentView, IsAnOutputRange) {
   ASSERT_TRUE(static_cast<bool>(
       std::ranges::output_range<
-          mdspan_range_submdspans<
+          mdspan_extent_view<
               std::experimental::mdspan<
                   float, std::experimental::extents<std::intmax_t, 2, 3, 5>>,
               1>,
           std::experimental::mdspan<
               float, std::experimental::extents<std::intmax_t, 2, 5>>>));
-  FAIL() << "FIXME Root-Cause for this to fail are the iterators, see above. "
-            "Also see the comments in the std::begin and std::end overrides.";
+  FAIL() << "FIXME Root-Cause for this to fail is the iterator.";
 }

@@ -155,7 +155,8 @@ limitations under the License.
         "__tree": "cpp",
         "__split_buffer": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "generator": "cpp"
     },
     "testing.automaticallyOpenPeekViewDuringAutoRun": true,
     "testing.alwaysRevealTestOnStateChange": true,
