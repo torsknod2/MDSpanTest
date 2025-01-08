@@ -17,19 +17,21 @@ name: C++ CI
 on:
   push:
     branches:
-      - main
+      - '*'
     tags:
       - '*'
   pull_request:
     branches:
-      - main
+      - '*'
 
 permissions:
+  actions: read
   checks: write
   contents: read
   id-token: write
   packages: write
   pages: write
+  security-events: write
 
 jobs:
   build:
@@ -110,6 +112,19 @@ jobs:
       #     cache-from: type=local,src=/tmp/.buildx-cache
       #     cache-to: type=local,dest=/tmp/.buildx-cache
 
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          build-mode: manual
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
+
+          # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+          queries: security-extended,security-and-quality
+
       - name: Run devcontainer
         uses: devcontainers/ci@v0.3
         with:
@@ -128,6 +143,11 @@ jobs:
             gcovr -r .. --decisions --calls --cobertura GTestOutputDir/coverage.cobertura.xml --html-details GTestOutputDir/coverage.html --jacoco GTestOutputDir/coverage.jacoco.xml --json GTestOutputDir/coverage.json --json-pretty --json-summary GTestOutputDir/coverage.summary.json --json-summary-pretty --lcov GTestOutputDir/coverage.lcov --sonarqube GTestOutputDir/coverage.sonarqube --txt GTestOutputDir/coverage.txt --print-summary --fail-under-line 100 --fail-under-branch 100 --fail-under-decision 100 --fail-under-function 100 -j --gcov-executable /usr/bin/x86_64-linux-gnu-gcov-14
 # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
 
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        continue-on-error: true
+        with:
+          category: "/language:c-cpp"
       - name: Convert JUnit to HTML
         uses: mikepenz/action-junit-report@v3
         if: success() || failure()
