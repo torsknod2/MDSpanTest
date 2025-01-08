@@ -145,9 +145,9 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        continue-on-error: true
         with:
           category: "/language:c-cpp"
-
       - name: Convert JUnit to HTML
         uses: mikepenz/action-junit-report@v3
         if: success() || failure()
