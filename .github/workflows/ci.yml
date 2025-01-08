@@ -52,7 +52,7 @@ jobs:
               - default
               - disable
           - CMAKE_C_COMPILER: clang-18
-            CMAKE_CXX_COMPILER: clang-18
+            CMAKE_CXX_COMPILER: clang++-18
     runs-on:
       - self-hosted
       - ubuntu-24.04
