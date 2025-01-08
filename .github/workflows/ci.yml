@@ -126,11 +126,14 @@ jobs:
           queries: security-extended,security-and-quality
 
       - name: Run devcontainer
-        uses: devcontainers/ci@v0.3
+        uses: devcontainers/ci@3998f9ee7179e91ad72065e0b68fe2ebed581346 # unreleased to have `cacheTo` support
         with:
           imageName: ghcr.io/torsknod2/mdspantest-devcontainer
           imageTag: ${{ env.devcontainer_tag }}${{ github.ref == 'refs/heads/main' && ',latest' || '' }}
           cacheFrom: |
+            type=local,src=/tmp/.buildx-cache
+            type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
+          cacheTo: |
             type=local,src=/tmp/.buildx-cache
             type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
           runCmd: |
