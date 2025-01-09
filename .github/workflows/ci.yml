@@ -72,6 +72,10 @@ jobs:
         uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5
         with:
           driver: docker-container
+          driver-opts: default-load=true
+          install: true
+          use: true
+          cache-binary: true
 
       # - name: Create Buildx builder
       #   run: |
@@ -88,10 +92,10 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: ${{ runner.temp }}/devContainerUserDataFolder
+          key: ${{ runner.os }}-devContainerUserDataFolder-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-devContainerUserDataFolder-
 
       - name: Determine Docker image tag
         id: image_tag
@@ -135,8 +139,12 @@ jobs:
           imageName: ghcr.io/torsknod2/mdspantest-devcontainer
           imageTag: ${{ env.devcontainer_tag }}${{ github.ref == 'refs/heads/main' && ',latest' || '' }}
           cacheFrom: |
-            type=local,src=/tmp/.buildx-cache
+            type=gha
             type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
+          #cacheTo: |
+          #  type=gha,mode=max,compression-level=22,ignore-error=true
+          #  type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer,mode=max,compression-level=22,ignore-error=true
+          userDataFolder: ${{ runner.temp }}/devContainerUserDataFolder
           runCmd: |
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-gcc-14 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-g++-14
             cmake --build build --verbose --parallel
