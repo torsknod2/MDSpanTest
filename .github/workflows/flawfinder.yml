@@ -5,7 +5,15 @@
 
 name: flawfinder
 
-on: ["push", "pull_request"]
+on:
+  push:
+#    branches: Disabled Because of #25
+#      - '*' Disabled Because of #25
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   flawfinder:
