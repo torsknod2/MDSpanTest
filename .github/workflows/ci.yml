@@ -16,8 +16,8 @@ name: C++ CI
 
 on:
   push:
-    branches:
-      - '*'
+#    branches: Disabled Because of #25
+#      - '*' Disabled Because of #25
     tags:
       - '*'
   pull_request:
