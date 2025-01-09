@@ -8,7 +8,15 @@
 
 name: Microsoft C++ Code Analysis
 
-on: ["push", "pull_request"]
+on:
+  push:
+#    branches: Disabled Because of #25
+#      - '*' Disabled Because of #25
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 env:
   # Path to the CMake build directory.
