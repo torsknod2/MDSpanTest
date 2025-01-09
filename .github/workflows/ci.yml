@@ -24,6 +24,10 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id}}
+  cancel-in-progress: true
+
 permissions:
   actions: read
   checks: write
@@ -46,7 +50,7 @@ jobs:
       - name: Maximize build disk space
         if: runner.name != 'tmk-wkst-4'
         # This has to be before the checkout, because else the checked out code will be deleted by this action.
-        uses: easimon/maximize-build-space@v10
+        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c
         with:
           build-mount-path: '/var/lib/docker/'
           remove-android: true
@@ -59,13 +63,13 @@ jobs:
         run: sudo sh -c "mv ${GITHUB_WORKSPACE}/docker/* /var/lib/docker"
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5
         with:
           driver: docker-container
 
@@ -75,14 +79,14 @@ jobs:
       #     docker buildx create --name mybuilder --driver docker-container --use
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -114,7 +118,7 @@ jobs:
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
         with:
           languages: c-cpp
           build-mode: manual
@@ -147,12 +151,12 @@ jobs:
 # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
         continue-on-error: true
         with:
           category: "/language:c-cpp"
       - name: Convert JUnit to HTML
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@150e2f992e4fad1379da2056d1d1c279f520e058
         if: success() || failure()
         with:
           report_paths: build/GTestOutputDir/**/*.junit.xml
@@ -160,7 +164,7 @@ jobs:
           include_passed: true
 
       - name: Upload reports/ results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b
         if: success() || failure()
         with:
           name: all
