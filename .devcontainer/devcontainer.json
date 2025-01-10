@@ -17,9 +17,7 @@ limitations under the License.
 */
 {
 	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"image": "mcr.microsoft.com/devcontainers/cpp:noble",
 	"features": {
 		"ghcr.io/devcontainers-extra/features/act": {},
 		"ghcr.io/devcontainers-extra/features/actionlint": {},
