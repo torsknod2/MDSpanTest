@@ -138,7 +138,7 @@ limitations under the License.
 			"autoPull": true,
 			"installDirectlyFromGitHubRelease": true
 		},
-		"ghcr.io/devcontainers-community/features/cmake": {},
+		//"ghcr.io/devcontainers-community/features/cmake": {},
 		"ghcr.io/msclock/features/vcpkg": {}
 	},
 	"customizations": {
