@@ -100,7 +100,7 @@ jobs:
           mv ctest.log.txt ctest.junit.xml GTestOutputDir
 
       - name: Check Test Coverage
-        uses: threeal/gcovr-action@v1.1.0
+        uses: threeal/gcovr-action@c1f15c6e8d83b7d2e6c3c3a55f01a7c2f6c13e23
         if: success() || failure()
         with:
           root: ..
