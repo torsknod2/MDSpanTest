@@ -147,7 +147,6 @@ jobs:
         continue-on-error: true
         with:
           category: "/language:c-cpp"
-          queries: security-extended,security-and-quality
 
       - name: Convert JUnit to HTML
         uses: mikepenz/action-junit-report@150e2f992e4fad1379da2056d1d1c279f520e058
