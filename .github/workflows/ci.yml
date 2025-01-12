@@ -74,8 +74,9 @@ jobs:
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
+        if: success() || failure()
         with:
-          languages: actions c-cpp
+          languages: experimental-actions c-cpp
           build-mode: manual
           queries: security-extended,security-and-quality
 
