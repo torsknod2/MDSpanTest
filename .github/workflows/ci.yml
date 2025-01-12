@@ -116,7 +116,8 @@ jobs:
           #calls: true
           #j: true
           #cobertura: GTestOutputDir/coverage.cobertura.xml
-          html-details: GTestOutputDir/coverage.html
+          html-out: GTestOutputDir/coverage.html
+          html-details: true
           #jacoco: GTestOutputDir/coverage.jacoco.xml
           #json: GTestOutputDir/coverage.json
           #json-pretty: true
