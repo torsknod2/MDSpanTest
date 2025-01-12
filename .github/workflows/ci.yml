@@ -142,7 +142,8 @@ jobs:
             --txt GTestOutputDir/coverage.txt \
             --print-summary \
             --filter build/_deps/.\* \
-            -j
+            -j \
+            --gcov-executable /usr/bin/x86_64-linux-gnu-gcov-14
       # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
       - name: Perform CodeQL Analysis
         if: success() || failure()
