@@ -110,11 +110,11 @@ jobs:
           filter: _deps
           fail-under-line: 100
           fail-under-branch: 100
-          #fail-under-decision: 100
+          fail-under-decision: 100
           fail-under-function: 100
-          #decisions: true
-          #calls: true
-          #j: true
+          decisions: true
+          calls: true
+          j: true
           #cobertura: GTestOutputDir/coverage.cobertura.xml
           html-out: GTestOutputDir/coverage.html
           html-details: true
@@ -126,7 +126,7 @@ jobs:
           #lcov: GTestOutputDir/coverage.lcov
           #sonarqube: GTestOutputDir/coverage.sonarqube
           #txt: GTestOutputDir/coverage.txt
-          #print-summary: true
+          print-summary: true
 
       - name: Generate Coverage Reports
         if: success() || failure()
