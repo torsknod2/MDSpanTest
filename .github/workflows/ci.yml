@@ -107,7 +107,7 @@ jobs:
           root: ..
           gcov-executable: /usr/bin/x86_64-linux-gnu-gcov-14
           working-directory: build
-          excludes: (.*/)build/_deps/
+          filter: _deps
           fail-under-line: 100
           fail-under-branch: 100
           #fail-under-decision: 100
@@ -141,7 +141,7 @@ jobs:
             --sonarqube GTestOutputDir/coverage.sonarqube \
             --txt GTestOutputDir/coverage.txt \
             --print-summary \
-            --filter build/_deps/.\* \
+            --filter _deps \
             -j \
             --gcov-executable /usr/bin/x86_64-linux-gnu-gcov-14
       # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
