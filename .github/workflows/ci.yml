@@ -100,14 +100,14 @@ jobs:
           mv ctest.log.txt ctest.junit.xml GTestOutputDir
 
       - name: Check Test Coverage
-        uses: threeal/gcovr-action@9e51adaccda85662e99d0c29087f99fcf976c8dc
+        uses: torsknod2/gcovr-action@main
         if: success() || failure()
         with:
           force_install: true
           root: ..
           gcov-executable: /usr/bin/x86_64-linux-gnu-gcov-14
           working-directory: build
-          excludes: build/_deps/.*
+          excludes: (.*/)build/_deps/
           fail-under-line: 100
           fail-under-branch: 100
           #fail-under-decision: 100
