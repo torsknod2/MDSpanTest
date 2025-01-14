@@ -16,13 +16,13 @@ name: C++ CI
 
 on:
   push:
-#    branches: Disabled Because of #25
-#      - '*' Disabled Because of #25
+    # branches: Disabled Because of #25
+    # - "*" Disabled Because of #25
     tags:
-      - '*'
+      - "*"
   pull_request:
     branches:
-      - '*'
+      - "*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id}}
@@ -39,119 +39,101 @@ permissions:
 
 jobs:
   build:
-    runs-on:
-      - self-hosted
-      - ubuntu-24.04
+    runs-on: ubuntu-24.04
+
     steps:
-      - name: Temporarily move /var/lib/docker/ to GitHub workspace until mounted.
-        if: runner.name != 'tmk-wkst-4'
-        run: sudo mv /var/lib/docker/ "${GITHUB_WORKSPACE}/docker"
-
-      - name: Maximize build disk space
-        if: runner.name != 'tmk-wkst-4'
-        # This has to be before the checkout, because else the checked out code will be deleted by this action.
-        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c
-        with:
-          build-mount-path: '/var/lib/docker/'
-          remove-android: true
-          remove-dotnet: true
-          remove-haskell: true
-          swap-size-mb: 4
-
-      - name: Restore /var/lib/docker/
-        if: runner.name != 'tmk-wkst-4'
-        run: sudo sh -c "mv ${GITHUB_WORKSPACE}/docker/* /var/lib/docker"
-
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5
-        with:
-          driver: docker-container
-
-      # - name: Create Buildx builder
-      #   run: |
-      #     docker buildx rm -f mybuilder || true
-      #     docker buildx create --name mybuilder --driver docker-container --use
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cache Docker layers
+      - name: Set up apt cache
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          path: |
+            /var/lib/apt/lists
+            /var/lib/apt/swcatalog
+            /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/ci.yml') }}
 
-      - name: Determine Docker image tag
-        id: image_tag
-        run: |
-          DEVCONTAINER_TAG=$(git describe --tags --always $(git log --oneline -n1 .devcontainer | cut -f1 -d" "))
-          if [ $? -ne 0 ]; then
-            echo "Failed to determine the tag. Skipping image push."
-            exit 1
-          fi
-          echo "devcontainer_tag=${DEVCONTAINER_TAG}" >> $GITHUB_ENV
+      - name: Cache APT Packages
+        uses: torsknod2/cache-apt-pkgs-action@FallBack2InstallAndCachePkgIfRestorePkgFails
+        with:
+          packages: clang-18-doc clang-18-examples clang-format-18 clang-tidy-18 clangd-18 cpp-14-doc dia dia-shapes doxygen doxygen-doc doxygen-gui doxygen-latex fonts-freefont-ttf fonts-freefont-otf fonts-texgyre fonts-urw-base35 g++-14 gcc-14-doc gcc-14-locales gcc-14-multilib gcc-14-offload-amdgcn gcc-14-offload-nvptx gcovr graphviz graphviz-doc gsfonts lcov llvm-18-doc llvm-18-examples llvm-18-tools mmv mscgen nsight-compute nsight-systems nvidia-cuda-gdb nvidia-cuda-toolkit nvidia-cuda-toolkit-doc nvidia-profiler wasi-libc
+          execute_install_scripts: true
 
-      # - name: Build and push Docker image
-      #   if: success()
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .devcontainer
-      #     builder: mybuilder
-      #     push: true
-      #     tags: |
-      #       ghcr.io/torsknod2/mdspantest-devcontainer:${{ env.devcontainer_tag }}
-      #       ${{ github.ref == 'refs/heads/main' && 'ghcr.io/torsknod2/mdspantest-devcontainer:latest' || '' }}
-      #     cache-from: type=local,src=/tmp/.buildx-cache
-      #     cache-to: type=local,dest=/tmp/.buildx-cache
+      - name: get-cmake
+        uses: lukka/get-cmake@acb35cf920333f4dc3fc4f424f1b30d5e7d561b4
+        with:
+          cmakeVersion: latest
+          ninjaVersion: latest
+          useCloudCache: true
+          useLocalCache: true
 
-      # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
+        if: success() || failure()
         with:
-          languages: c-cpp
+          languages: c-cpp # TODO Get (experimenta-l)actions working
           build-mode: manual
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
-
-          # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           queries: security-extended,security-and-quality
 
-      - name: Run devcontainer
-        uses: devcontainers/ci@a56d055efecd725e8cfe370543b6071b79989cc8
-        with:
-          imageName: ghcr.io/torsknod2/mdspantest-devcontainer
-          imageTag: ${{ env.devcontainer_tag }}${{ github.ref == 'refs/heads/main' && ',latest' || '' }}
-          cacheFrom: |
-            type=local,src=/tmp/.buildx-cache
-            type=registry,ref=ghcr.io/torsknod2/mdspantest-devcontainer
-          runCmd: |
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-gcc-14 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-g++-14
-            cmake --build build --verbose --parallel
-            cd build
-            ctest --output-on-failure --output-log ctest.log.txt --output-junit ctest.junit.xml -j -R MDSpanTest
-            find GTestOutputDir -type d -exec mmv -r "{}/*.xml" "#1.junit.xml" \;
-            mv ctest.log.txt ctest.junit.xml GTestOutputDir
-            gcovr -r .. --decisions --calls --cobertura GTestOutputDir/coverage.cobertura.xml --html-details GTestOutputDir/coverage.html --jacoco GTestOutputDir/coverage.jacoco.xml --json GTestOutputDir/coverage.json --json-pretty --json-summary GTestOutputDir/coverage.summary.json --json-summary-pretty --lcov GTestOutputDir/coverage.lcov --sonarqube GTestOutputDir/coverage.sonarqube --txt GTestOutputDir/coverage.txt --print-summary --fail-under-line 100 --fail-under-branch 100 --fail-under-decision 100 --fail-under-function 100 -j --gcov-executable /usr/bin/x86_64-linux-gnu-gcov-14
-# TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
+      #      - name: run-cmake
+      #        uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4
 
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-gcc-14 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-g++-14
+
+      - name: Build
+        run: cmake --build build --verbose --parallel
+
+      - name: Run Tests
+        working-directory: build
+        run: ctest --output-on-failure --output-log ctest.log.txt --output-junit ctest.junit.xml -j -R MDSpanTest
+
+      - name: Move Test Results to Target Location
+        if: success() || failure()
+        working-directory: build
+        run: |
+          find GTestOutputDir -type d -exec mmv -r "{}/*.xml" "#1.junit.xml" \;
+          mv ctest.log.txt ctest.junit.xml GTestOutputDir
+
+      - name: Check Test Coverage
+        uses: torsknod2/gcovr-action@e61af7634ea90c47ea9da7d7bb393140e43c2aec
+        if: success() || failure()
+        with:
+          force_install: true
+          root: ..
+          gcov-executable: /usr/bin/x86_64-linux-gnu-gcov-14
+          working-directory: build
+          filter: _deps
+          fail-under-line: 100
+          fail-under-branch: 100
+          fail-under-decision: 100
+          fail-under-function: 100
+          decisions: true
+          calls: true
+          j: true
+          cobertura-out: GTestOutputDir/coverage.cobertura.xml
+          cobertura-pretty: true
+          html-out: GTestOutputDir/coverage.html
+          html-details: true
+          jacoco-out: GTestOutputDir/coverage.jacoco.xml
+          json-out: GTestOutputDir/coverage.json
+          json-pretty: true
+          json-summary-out: GTestOutputDir/coverage.summary.json
+          json-summary-pretty: true
+          lcov-out: GTestOutputDir/coverage.lcov
+          sonarqube-out: GTestOutputDir/coverage.sonarqube
+          txt-out: GTestOutputDir/coverage.txt
+          print-summary: true
+
+      # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
       - name: Perform CodeQL Analysis
+        if: success() || failure()
         uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
         continue-on-error: true
         with:
           category: "/language:c-cpp"
+
       - name: Convert JUnit to HTML
         uses: mikepenz/action-junit-report@150e2f992e4fad1379da2056d1d1c279f520e058
         if: success() || failure()
@@ -159,6 +141,15 @@ jobs:
           report_paths: build/GTestOutputDir/**/*.junit.xml
           fail_on_failure: true
           include_passed: true
+
+      - name: Test Report
+        uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+        if: success() || failure()
+        with:
+          name: Test Results
+          working-directory: build
+          path: GTestOutputDir/**/*.junit.xml
+          reporter: java-junit
 
       - name: Upload reports/ results
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b
