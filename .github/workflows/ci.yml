@@ -112,18 +112,18 @@ jobs:
           decisions: true
           calls: true
           j: true
-          cobertura: GTestOutputDir/coverage.cobertura.xml
+          cobertura-out: GTestOutputDir/coverage.cobertura.xml
           cobertura-pretty: true
           html-out: GTestOutputDir/coverage.html
           html-details: true
-          jacoco: GTestOutputDir/coverage.jacoco.xml
-          json: GTestOutputDir/coverage.json
+          jacoco-out: GTestOutputDir/coverage.jacoco.xml
+          json-out: GTestOutputDir/coverage.json
           json-pretty: true
-          json-summary: GTestOutputDir/coverage.summary.json
+          json-summary-out: GTestOutputDir/coverage.summary.json
           json-summary-pretty: true
-          lcov: GTestOutputDir/coverage.lcov
-          sonarqube: GTestOutputDir/coverage.sonarqube
-          txt: GTestOutputDir/coverage.txt
+          lcov-out: GTestOutputDir/coverage.lcov
+          sonarqube-out: GTestOutputDir/coverage.sonarqube
+          txt-out: GTestOutputDir/coverage.txt
           print-summary: true
 
       # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
