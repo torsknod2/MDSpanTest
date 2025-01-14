@@ -17,9 +17,7 @@ limitations under the License.
 */
 {
 	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"image": "mcr.microsoft.com/devcontainers/cpp:noble",
 	"features": {
 		"ghcr.io/devcontainers-extra/features/act": {},
 		"ghcr.io/devcontainers-extra/features/actionlint": {},
@@ -139,7 +137,9 @@ limitations under the License.
 		"ghcr.io/devcontainers/features/git-lfs": {
 			"autoPull": true,
 			"installDirectlyFromGitHubRelease": true
-		}
+		},
+		//"ghcr.io/devcontainers-community/features/cmake": {},
+		"ghcr.io/msclock/features/vcpkg": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -166,10 +166,33 @@ limitations under the License.
 	],
 	"hostRequirements": {
 		"storage": "20gb"
-	}
+	},
+	"mounts": [
+		{
+			"target": "/tmp",
+			"type": "tmpfs"
+		} /*,
+		{
+			"mode": "0755",
+			"sharing": "locked",
+			"target": "/var/cache/apt",
+			"type": "cache",
+		},
+		{
+			"mode": "0755",
+			"sharing": "locked",
+			"target": "/var/lib/apt",
+			"type": "cache"
+		},
+		{
+			"mode": "0755",
+			"sharing": "locked",
+			"target": "/var/lib/swcatalog",
+			"type": "cache"
+		}*/
+	]
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 }
-
