@@ -39,8 +39,21 @@ permissions:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        CMAKE_C_COMPILER:
+        - x86_64-linux-gnu-gcc-14
+        - clang-18
+        include:
+          - CMAKE_C_COMPILER: x86_64-linux-gnu-gcc-14
+            CMAKE_CXX_COMPILER: x86_64-linux-gnu-g++-14
+            GCOV_EXECUTABLE: x86_64-linux-gnu-gcov-14
+            CMAKE_CXX_COMPILER_OFFLOAD:
+              - default
+              - disable
+          - CMAKE_C_COMPILER: clang-18
+            CMAKE_CXX_COMPILER: clang++-18
     runs-on: ubuntu-24.04
-
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -76,11 +89,8 @@ jobs:
           build-mode: manual
           queries: security-extended,security-and-quality
 
-      #      - name: run-cmake
-      #        uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4
-
       - name: Configure CMake
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-gcc-14 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/x86_64-linux-gnu-g++-14
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_C_COMPILER}} -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/${{matrix.CMAKE_CXX_COMPILER}} ${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD && format('-DCMAKE_CXX_COMPILER_OFFLOAD:STRING={0}', matrix.CMAKE_CXX_COMPILER_OFFLOAD) || '' }}
 
       - name: Build
         run: cmake --build build --verbose --parallel
@@ -98,11 +108,11 @@ jobs:
 
       - name: Check Test Coverage
         uses: torsknod2/gcovr-action@e61af7634ea90c47ea9da7d7bb393140e43c2aec
-        if: success() || failure()
+        if: (success() || failure()) && ${{matrix.GCOV_EXECUTABLE}}
         with:
           force_install: true
           root: ..
-          gcov-executable: /usr/bin/x86_64-linux-gnu-gcov-14
+          gcov-executable: ${{matrix.GCOV_EXECUTABLE}}
           working-directory: build
           filter: _deps
           fail-under-line: 100
@@ -155,7 +165,7 @@ jobs:
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b
         if: success() || failure()
         with:
-          name: all
+          name: ${{ matrix.CMAKE_C_COMPILER }}-${{ matrix.CMAKE_CXX_COMPILER }}-${{ matrix.GCOV_EXECUTABLE || 'nocov' }}-${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD || 'nooffload' }}
           path: build/GTestOutputDir
 
       # - name: Upload GitHub Pages Artifact
