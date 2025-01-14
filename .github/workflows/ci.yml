@@ -116,17 +116,18 @@ jobs:
           decisions: true
           calls: true
           j: true
-          #cobertura: GTestOutputDir/coverage.cobertura.xml
+          cobertura: GTestOutputDir/coverage.cobertura.xml
+          cobertura-pretty: true
           html-out: GTestOutputDir/coverage.html
           html-details: true
-          #jacoco: GTestOutputDir/coverage.jacoco.xml
-          #json: GTestOutputDir/coverage.json
-          #json-pretty: true
-          #json-summary: GTestOutputDir/coverage.summary.json
-          #json-summary-pretty: true
-          #lcov: GTestOutputDir/coverage.lcov
-          #sonarqube: GTestOutputDir/coverage.sonarqube
-          #txt: GTestOutputDir/coverage.txt
+          jacoco: GTestOutputDir/coverage.jacoco.xml
+          json: GTestOutputDir/coverage.json
+          json-pretty: true
+          json-summary: GTestOutputDir/coverage.summary.json
+          json-summary-pretty: true
+          lcov: GTestOutputDir/coverage.lcov
+          sonarqube: GTestOutputDir/coverage.sonarqube
+          txt: GTestOutputDir/coverage.txt
           print-summary: true
 
       - name: Generate Coverage Reports
