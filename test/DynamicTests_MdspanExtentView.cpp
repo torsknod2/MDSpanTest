@@ -16,75 +16,93 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
-#include "mdspan_extent_view.hpp" // Assuming this is the header file for mdspan_extent_view
+#include "mdspan_extensions.hpp"
 
-// Test case to check the default constructor
-TEST(MdspanExtentViewTest, DefaultConstructor) {
-  mdspan_extent_view<int> view;
+#include "DynamicTestsBase.hpp"
+
+TYPED_TEST(DynamicMDSpanExtentTest, DefaultConstructor) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view();
   EXPECT_EQ(view.extent(), 0);
 }
 
-// Test case to check construction with a specific extent
-TEST(MdspanExtentViewTest, ConstructorWithExtent) {
-  mdspan_extent_view<int> view(5);
+TYPED_TEST(DynamicMDSpanExtentTest, ConstructFromMDSpan) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view(
+      this->vertices_mdspan);
   EXPECT_EQ(view.extent(), 5);
 }
 
-// Test case to check the extent method
-TEST(MdspanExtentViewTest, ExtentMethod) {
-  mdspan_extent_view<int> view(10);
-  EXPECT_EQ(view.extent(), 10);
-}
-
-// Test case to check the copy constructor
-TEST(MdspanExtentViewTest, CopyConstructor) {
-  mdspan_extent_view<int> original(7);
-  mdspan_extent_view<int> copy(original);
+TYPED_TEST(DynamicMDSpanExtentTest, CopyConstructor) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> copy(original);
   EXPECT_EQ(copy.extent(), 7);
 }
 
-// Test case to check the assignment operator
-TEST(MdspanExtentViewTest, AssignmentOperator) {
-  mdspan_extent_view<int> original(3);
-  mdspan_extent_view<int> assigned;
+TYPED_TEST(DynamicMDSpanExtentTest, AssignmentOperator) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> assigned();
   assigned = original;
   EXPECT_EQ(assigned.extent(), 3);
 }
 
-// Test case to check the move constructor
-TEST(MdspanExtentViewTest, MoveConstructor) {
-  mdspan_extent_view<int> original(4);
-  mdspan_extent_view<int> moved(std::move(original));
+TYPED_TEST(DynamicMDSpanExtentTest, MoveConstructor) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved(
+      std::move(original));
   EXPECT_EQ(moved.extent(), 4);
   EXPECT_EQ(original.extent(),
             0); // Assuming moved-from object is set to default state
 }
 
-// Test case to check the move assignment operator
-TEST(MdspanExtentViewTest, MoveAssignmentOperator) {
-  mdspan_extent_view<int> original(6);
-  mdspan_extent_view<int> moved;
+TYPED_TEST(DynamicMDSpanExtentTest, MoveAssignmentOperator) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> original(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> moved();
   moved = std::move(original);
   EXPECT_EQ(moved.extent(), 6);
   EXPECT_EQ(original.extent(),
             0); // Assuming moved-from object is set to default state
 }
 
-// Test case to check the equality operator
-TEST(MdspanExtentViewTest, EqualityOperator) {
-  mdspan_extent_view<int> view1(8);
-  mdspan_extent_view<int> view2(8);
+TYPED_TEST(DynamicMDSpanExtentTest, EqualityOperator) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view1(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view2(
+      this->vertices_mdspan);
   EXPECT_TRUE(view1 == view2);
 }
 
-// Test case to check the inequality operator
-TEST(MdspanExtentViewTest, InequalityOperator) {
-  mdspan_extent_view<int> view1(8);
-  mdspan_extent_view<int> view2(9);
+TYPED_TEST(DynamicMDSpanExtentTest, InequalityOperator) {
+  this->setArrayContent();
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view1(
+      this->vertices_mdspan);
+  mdspan_extent_view<decltype(this->vertices_mdspan), 1> view2(9);
   EXPECT_TRUE(view1 != view2);
 }
 
-TEST_F(DynamicMDSpanExtentIteratorTest, GenerateTest) {
+TYPED_TEST(DynamicMDSpanExtentTest, SizeCorrect) {
+  this->setArrayContent();
+  /*
+  ASSERT_EQ((std::ranges::size<decltype(vertices_mdspan), 1>(vertices_mdspan)),
+            (static_cast<size_t>(4)));
+  ASSERT_EQ((std::ranges::size<decltype(vertices_mdspan), 2>(vertices_mdspan)),
+            (static_cast<size_t>(2)));
+            */
+  FAIL() << "FIXME This is not working, because it claims that the referenze "
+            "to size is ambiguous. I guess this has to do with the template "
+            "template parameters I require, but I am not really sure.";
+}
+
+TYPED_TEST(DynamicMDSpanExtentTest, GenerateTest) {
   FAIL()
       << "FIXME Beside not matching current TestArrayContent implementation, "
          "this fails because the assignment to the returned mdspan is only "

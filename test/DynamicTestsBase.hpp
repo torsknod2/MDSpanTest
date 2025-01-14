@@ -16,30 +16,67 @@ limitations under the License.
 
 #pragma once
 
+#include <algorithm>
+#include <generator>
+#include <iterator>
+#include <ranges>
 #include <vector>
 
-class DynamicTestsBase {
-public:
-  // Virtual destructor for proper cleanup of derived classes
-  virtual ~DynamicTestsBase() {}
+#include <experimental/mdarray>
+#include <experimental/mdspan>
 
-  // Method to initialize the test with a given size
-  virtual void initializeTest(size_t size) = 0;
+#include <gtest/gtest.h>
 
-  // Method to compare the generated sequence with a Fibonacci sequence
-  virtual bool compareWithFibonacci(const std::vector<int> &sequence) = 0;
-
+template <typename ValueType>
+class DynamicMDSpanExtentTest : public ::testing::Test {
 protected:
-  // Helper method to generate a Fibonacci sequence of a given size
-  std::vector<int> generateFibonacciSequence(size_t size) {
-    std::vector<int> fibonacci(size);
-    if (size > 0)
-      fibonacci[0] = 0;
-    if (size > 1)
-      fibonacci[1] = 1;
-    for (size_t i = 2; i < size; ++i) {
-      fibonacci[i] = fibonacci[i - 1] + fibonacci[i - 2];
+  std::experimental::mdarray<ValueType,
+                             std::experimental::extents<size_t, 2, 3, 5>>
+      vertices{std::vector<ValueType>(2 * 3 * 5), 2, 3, 5};
+  std::experimental::mdspan<ValueType,
+                            std::experimental::extents<size_t, 2, 3, 5>>
+      vertices_mdspan = vertices.to_mdspan();
+
+  void SetUp() override {
+    ASSERT_EQ(vertices_mdspan.rank(), 3);
+    ASSERT_EQ(vertices_mdspan.size(), 30);
+    ASSERT_EQ(vertices_mdspan.extent(0), 2);
+    ASSERT_EQ(vertices_mdspan.extent(1), 3);
+    ASSERT_EQ(vertices_mdspan.extent(2), 5);
+  }
+
+  template <typename SizeType = std::uintmax_t>
+  std::generator<ValueType> fibonacciGenerator(
+      SizeType number = std::numeric_limits<SizeType>::max()) const
+    requires(std::unsigned_integral<SizeType> &&
+             std::numeric_limits<ValueType>::max() >
+                 std::numeric_limits<decltype(number)>::max())
+  {
+    float a = static_cast<ValueType>(0);
+    if (number-- > 0) {
+      co_yield a;
+      float b = static_cast<ValueType>(1);
+      while (number-- > 0) {
+        co_yield a = std::exchange(b, a + b);
+      }
     }
-    return fibonacci;
+  }
+
+  void setArrayContent() {
+    std::ranges::copy(fibonacciGenerator(vertices.size()), vertices.data());
+
+    testArrayContent();
+  }
+
+  void testArrayContent() const {
+    std::ranges::for_each(
+        std::views::zip(std::views::counted(vertices.data(), vertices.size()),
+                        fibonacciGenerator(vertices.size())),
+        [](const std::tuple<ValueType, ValueType> &pair) {
+          ASSERT_EQ(std::get<0>(pair), std::get<1>(pair));
+        });
   }
 };
+
+using DynamicMDSpanExtentTestTypes = ::testing::Types<float>;
+TYPED_TEST_SUITE(DynamicMDSpanExtentTest, DynamicMDSpanExtentTestTypes);
