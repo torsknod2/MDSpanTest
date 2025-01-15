@@ -145,7 +145,7 @@ jobs:
           category: "/language:c-cpp"
 
       - name: Convert JUnit to HTML
-        uses: mikepenz/action-junit-report@150e2f992e4fad1379da2056d1d1c279f520e058
+        uses: mikepenz/action-junit-report@62516aa379bff6370c95fd5894d5a27fb6619d9b
         if: success() || failure()
         with:
           report_paths: build/GTestOutputDir/**/*.junit.xml
