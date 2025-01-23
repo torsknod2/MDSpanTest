@@ -82,7 +82,7 @@ jobs:
           useLocalCache: true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
+        uses: github/codeql-action/init@ee117c905ab18f32fa0f66c2fe40ecc8013f3e04
         if: success() || failure()
         with:
           languages: c-cpp # TODO Get (experimenta-l)actions working
@@ -139,7 +139,7 @@ jobs:
       # TODO Add test step for benchmark using RelWithDebInfo once implemented: ./BenchmarkMain
       - name: Perform CodeQL Analysis
         if: success() || failure()
-        uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169
+        uses: github/codeql-action/analyze@ee117c905ab18f32fa0f66c2fe40ecc8013f3e04
         continue-on-error: true
         with:
           category: "/language:c-cpp"
