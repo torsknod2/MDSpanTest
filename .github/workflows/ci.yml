@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e
         with:
           egress-policy: block
           allowed-endpoints: >
@@ -116,7 +116,7 @@ jobs:
           mv ctest.log.txt ctest.junit.xml GTestOutputDir
 
       - name: Check Test Coverage
-        uses: torsknod2/gcovr-action@e61af7634ea90c47ea9da7d7bb393140e43c2aec
+        uses: torsknod2/gcovr-action@742bc7c9ccf227bad1f53c59a8d5c42c79ed2b81
         if: (success() || failure()) && ${{matrix.GCOV_EXECUTABLE}}
         with:
           force_install: true
