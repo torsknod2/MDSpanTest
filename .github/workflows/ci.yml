@@ -55,6 +55,11 @@ jobs:
             CMAKE_CXX_COMPILER: clang++-18
     runs-on: ubuntu-24.04
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -68,7 +73,7 @@ jobs:
           key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/ci.yml') }}
 
       - name: Cache APT Packages
-        uses: torsknod2/cache-apt-pkgs-action@FallBack2InstallAndCachePkgIfRestorePkgFails
+        uses: torsknod2/cache-apt-pkgs-action@17ab10b5acb112df5c8f8fe83a91a4d5019eb41d # FallBack2InstallAndCachePkgIfRestorePkgFails
         with:
           packages: clang-18-doc clang-18-examples clang-format-18 clang-tidy-18 clangd-18 cpp-14-doc dia dia-shapes doxygen doxygen-doc doxygen-gui doxygen-latex fonts-freefont-ttf fonts-freefont-otf fonts-texgyre fonts-urw-base35 g++-14 gcc-14-doc gcc-14-locales gcc-14-multilib gcc-14-offload-amdgcn gcc-14-offload-nvptx gcovr graphviz graphviz-doc gsfonts lcov llvm-18-doc llvm-18-examples llvm-18-tools mmv mscgen nsight-compute nsight-systems nvidia-cuda-gdb nvidia-cuda-toolkit nvidia-cuda-toolkit-doc nvidia-profiler wasi-libc
           execute_install_scripts: true
