@@ -38,10 +38,9 @@ jobs:
       checks: write
       contents: read
       packages: write
-      #pages: write
-      pull-requests: write
+      # pages: write
+      pull-requests: write  # Needed for test results comments
       security-events: write
-
     strategy:
       matrix:
         CMAKE_C_COMPILER:
