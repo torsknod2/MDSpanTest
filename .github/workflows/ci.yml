@@ -29,17 +29,19 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id}}
   cancel-in-progress: true
 
-permissions:
-  actions: read
-  checks: write
-  contents: read
-  id-token: write
-  packages: write
-  pages: write
-  security-events: write
+permissions: {}
 
 jobs:
   build:
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      packages: write
+      #pages: write
+      pull-requests: write
+      security-events: write
+
     strategy:
       matrix:
         CMAKE_C_COMPILER:
@@ -68,7 +70,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Set up apt cache
+      - name: Set up apt cacheactions/upload-artifact
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
           path: |
@@ -158,6 +160,7 @@ jobs:
         uses: mikepenz/action-junit-report@62516aa379bff6370c95fd5894d5a27fb6619d9b
         if: success() || failure()
         with:
+          comment: true
           report_paths: build/GTestOutputDir/**/*.junit.xml
           fail_on_failure: true
           include_passed: true

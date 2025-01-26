@@ -27,8 +27,7 @@ env:
   # Path to the CMake build directory.
   build: '${{ github.workspace }}/build'
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   analyze:
