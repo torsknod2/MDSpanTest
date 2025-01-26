@@ -29,17 +29,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id}}
   cancel-in-progress: true
 
-permissions:
-  actions: read
-  checks: write
-  contents: read
-  id-token: write
-  packages: write
-  pages: write
-  security-events: write
+permissions: {}
 
 jobs:
   build:
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      packages: write
+      # pages: write
+      pull-requests: write  # Needed for test results comments
+      security-events: write
     strategy:
       matrix:
         CMAKE_C_COMPILER:
@@ -158,6 +159,7 @@ jobs:
         uses: mikepenz/action-junit-report@62516aa379bff6370c95fd5894d5a27fb6619d9b
         if: success() || failure()
         with:
+          comment: true
           report_paths: build/GTestOutputDir/**/*.junit.xml
           fail_on_failure: true
           include_passed: true
