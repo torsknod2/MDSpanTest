@@ -4,6 +4,7 @@ on:
     # Only the default branch is supported.
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id}}
