@@ -19,6 +19,15 @@ limitations under the License.
 	"name": "C++",
 	"image": "mcr.microsoft.com/devcontainers/cpp:noble",
 	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker": {},
+		"ghcr.io/devcontainers/features/github-cli": {
+			"installDirectlyFromGitHubRelease": true
+		},
+		"ghcr.io/devcontainers/features/git-lfs": {
+			"autoPull": true,
+			"installDirectlyFromGitHubRelease": true
+		},
 		"ghcr.io/devcontainers-extra/features/act": {},
 		"ghcr.io/devcontainers-extra/features/actionlint": {},
 		"ghcr.io/devcontainers-extra/features/actions-runner": {},
@@ -119,7 +128,16 @@ limitations under the License.
 			]
 		},
 		"ghcr.io/devcontainers-extra/features/gh-cli": {},
-		// "ghcr.io/devcontainers-extra/features/gh-release": {},
+		"ghcr.io/devcontainers-extra/features/gh-release": {
+			"assetRegex": ".*tar.gz$",
+			"binaryNames": [
+				"cmake",
+				"ctest",
+				"cpack"
+			],
+			"libName": "cmake",
+			"repo": "kitware/cmake"
+		},
 		"ghcr.io/devcontainers-extra/features/git-lfs": {},
 		"ghcr.io/devcontainers-extra/features/gitomatic": {},
 		"ghcr.io/devcontainers-extra/features/gitsign": {},
@@ -130,13 +148,6 @@ limitations under the License.
 		"ghcr.io/devcontainers-extra/features/pipx-package": {
 			"includeDeps": true,
 			"package": "gcovr"
-		},
-		"ghcr.io/devcontainers/features/github-cli": {
-			"installDirectlyFromGitHubRelease": true
-		},
-		"ghcr.io/devcontainers/features/git-lfs": {
-			"autoPull": true,
-			"installDirectlyFromGitHubRelease": true
 		},
 		//"ghcr.io/devcontainers-community/features/cmake": {},
 		"ghcr.io/msclock/features/vcpkg": {}
@@ -154,7 +165,6 @@ limitations under the License.
 				"github.vscode-github-actions",
 				"GitHub.vscode-pull-request-github",
 				"llvm-vs-code-extensions.vscode-clangd",
-				"ms-azuretools.vscode-docker",
 				"ms-vscode.cmake-tools",
 				"ms-vscode.cpptools-extension-pack",
 				"ms-vscode.vscode-markdown-notebook"

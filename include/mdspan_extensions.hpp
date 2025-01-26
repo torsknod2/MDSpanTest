@@ -16,9 +16,10 @@ limitations under the License.
 
 #pragma once
 
-#include <array>
-#include <limits>
-#include <tuple>
+#include <concepts>
+#include <functional>
+#include <optional>
+#include <type_traits>
 #include <utility>
 
 #include <experimental/mdspan>
@@ -43,7 +44,7 @@ public:
   using iterator_category = std::random_access_iterator_tag;
   /// FIXME not working using iterator_concept =
   /// std::random_access_iterator_tag;
-  using value_type = decltype(*std::declval<mdspan_extent_iterator>);
+  // using value_type = decltype(*std::declval<mdspan_extent_iterator>);
   using reference = decltype(*std::declval<mdspan_extent_iterator>);
 
   mdspan_extent_iterator() = default;
@@ -65,7 +66,7 @@ public:
   /// std::experimental::submdspan result, which is again a
   /// std::experimental::mdspan, is changing the reference to the underlying
   /// data, but not the data itself.
-  auto operator*() const {
+  const auto operator*() const {
     return []<typename MDS::rank_type... PRE_EXTENTS,
               typename MDS::rank_type... POST_EXTENTS>(
                const MDS &mdspan,
@@ -90,7 +91,7 @@ public:
   /// std::experimental::submdspan result, which is again a
   /// std::experimental::mdspan, is changing the reference to the underlying
   /// data, but not the data itself.
-  auto operator[](const MDS::index_type offset) const {
+  const auto operator[](const MDS::index_type offset) const {
     return []<typename MDS::rank_type... PRE_EXTENTS,
               typename MDS::rank_type... POST_EXTENTS>(
                const MDS &mdspan,
@@ -185,6 +186,8 @@ private:
   typename MDS::index_type index = static_cast<typename MDS::index_type>(0);
 
 public:
+  mdspan_extent_view() = default;
+
   mdspan_extent_view(const mdspan_extent_view &other) = default;
 
   mdspan_extent_view(MDS &&mdspan, const typename MDS::index_type index =
@@ -195,6 +198,11 @@ public:
                      const typename MDS::index_type index =
                          static_cast<typename MDS::index_type>(0))
       : mdspan(mdspan), index(index) {}
+
+  mdspan_extent_view &operator=(const mdspan_extent_view &other) = default;
+
+  mdspan_extent_view &operator=(mdspan_extent_view &&other) noexcept = default;
+
   mdspan_extent_iterator<MDS, EXTENT> begin() const {
     return mdspan_extent_iterator<MDS, EXTENT>(mdspan.value());
   }
@@ -203,70 +211,20 @@ public:
     return mdspan_extent_iterator<MDS, EXTENT>(
         mdspan.value(), mdspan.value().get().extent(EXTENT));
   }
+
+  constexpr typename MDS::index_type size() const {
+    return mdspan.has_value() ? mdspan.value().get().extent(EXTENT) : 0;
+  }
+
+  constexpr typename MDS::index_type ssize() const
+    requires std::is_signed_v<typename MDS::index_type>
+  {
+    return size();
+  }
 };
 
 namespace std {
-/// @brief std::begin override for std::experimental::mdspan .
-/// @tparam MDS Is the std::experimental:mdspan
-/// @tparam EXTENT Is the extent of the mdspan to iterate over.
-/// @param mdspan is the std::experimental::mdspan to iterate over.
-/// @return A mdspan_extent_iterator object, which iterates over the given
-/// EXTENT of a std::experimental::mdspan and returns a
-/// std::experimental::submdspan for the element.
-/// @fixme Because the EXTENT apparently has to be a template parameter, this
-/// is not really fulfilling the requirements of an std::begin override. With
-/// this, std::experimental::mdspan cannot become a range.
-template <typename MDS, MDS::rank_type EXTENT>
-  requires std::derived_from<
-      MDS, std::experimental::mdspan<
-               typename MDS::element_type, typename MDS::extents_type,
-               typename MDS::layout_type, typename MDS::accessor_type>>
-mdspan_extent_iterator<MDS, EXTENT> begin(const MDS &mdspan) {
-  return mdspan_extent_iterator<MDS, EXTENT>(mdspan);
-}
-
-/// @brief std::end override for std::experimental::mdspan .
-/// @tparam MDS Is the std::experimental:mdspan
-/// @tparam EXTENT Is the extent of the mdspan to iterate over.
-/// @param mdspan is the std::experimental::mdspan to get a sentinel for.
-/// @return A mdspan_extent_iterator object, which points to the end of the
-/// given EXTENT of a std::experimental::mdspan and returns a
-/// std::experimental::submdspan for the element.
-/// @fixme Because the EXTENT apparently has to be a template parameter, this
-/// is not really fulfilling the requirements of an std::end override. With
-/// this, std::experimental::mdspan cannot become a range.
-template <typename MDS, MDS::rank_type EXTENT>
-  requires std::derived_from<
-      MDS, std::experimental::mdspan<
-               typename MDS::element_type, typename MDS::extents_type,
-               typename MDS::layout_type, typename MDS::accessor_type>>
-mdspan_extent_iterator<MDS, EXTENT> end(const MDS &mdspan) {
-  return mdspan_extent_iterator<MDS, EXTENT>(mdspan, mdspan.extent(EXTENT));
-}
-
 namespace ranges {
-
-template <typename MDS, MDS::rank_type EXTENT>
-  requires std::derived_from<
-               MDS,
-               std::experimental::mdspan<
-                   typename MDS::element_type, typename MDS::extents_type,
-                   typename MDS::layout_type, typename MDS::accessor_type>> &&
-           std::is_unsigned_v<typename MDS::index_type>
-constexpr MDS::index_type size(const MDS &mdspan) {
-  return mdspan.extent(EXTENT);
-}
-
-template <typename MDS, MDS::rank_type EXTENT>
-  requires std::derived_from<
-               MDS,
-               std::experimental::mdspan<
-                   typename MDS::element_type, typename MDS::extents_type,
-                   typename MDS::layout_type, typename MDS::accessor_type>> &&
-           std::is_signed_v<typename MDS::index_type>
-constexpr MDS::index_type ssize(const MDS &mdspan) {
-  return mdspan.extent(EXTENT);
-}
 
 template <typename MDS, MDS::rank_type EXTENT>
 inline constexpr bool enable_view<mdspan_extent_view<MDS, EXTENT>> = true;

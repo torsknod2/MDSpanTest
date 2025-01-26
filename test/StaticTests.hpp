@@ -13,20 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-{
-    "recommendations": [
-        "bierner.github-markdown-previe",
-        "docsmsft.docs-markdown",
-        "github.codespaces",
-        "github.copilot",
-        "github.copilot-chat",
-        "github.remotehub",
-        "github.vscode-codeql",
-        "github.vscode-github-actions",
-        "github.vscode-pull-request-github",
-        "llvm-vs-code-extensions.vscode-clangd",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.cpptools-extension-pack",
-        "ms-vscode.vscode-markdown-notebook"
-    ]
-}
+
+#pragma once
+
+#include <experimental/mdspan>
