@@ -21,7 +21,9 @@ limitations under the License.
 #include "DynamicTestsBase.hpp"
 
 TYPED_TEST(DynamicMDSpanExtentTest, DefaultConstructor) {
-  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> View;
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> view;
+  ASSERT_EQ(std::ranges::size(view), 0);
+  ASSERT_EQ(std::ranges::ssize(view), 1);
   FAIL()
       << "Review requirements to a default constructed view beside being "
          "assignable and so on. Perhaps the right thing is just to check that, "
@@ -95,14 +97,13 @@ TYPED_TEST(DynamicMDSpanExtentTest, InequalityOperator) {
 */
 
 TYPED_TEST(DynamicMDSpanExtentTest, SizeCorrect) {
-  this->setArrayContent();
-  /*
-  ASSERT_EQ((std::ranges::size<decltype(vertices_mdspan), 1>(vertices_mdspan)),
-            (static_cast<size_t>(4)));
-  ASSERT_EQ((std::ranges::size<decltype(vertices_mdspan), 2>(vertices_mdspan)),
-            (static_cast<size_t>(2)));
-            */
-  FAIL() << "FIXME This is not working, because it claims that the referenze "
-            "to size is ambiguous. I guess this has to do with the template "
-            "template parameters I require, but I am not really sure.";
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> view(
+      this->vertices_mdspan);
+  ASSERT_EQ(std::ranges::size(view), 3);
+}
+
+TYPED_TEST(DynamicMDSpanExtentTest, SignedSizeCorrect) {
+  [[maybe_unused]] mdspan_extent_view<decltype(this->vertices_mdspan), 1> view(
+      this->vertices_mdspan);
+  ASSERT_EQ(std::ranges::ssize(view), 3);
 }
