@@ -156,7 +156,7 @@ jobs:
           category: "/language:c-cpp"
 
       - name: Convert JUnit to HTML
-        uses: mikepenz/action-junit-report@ee6b445351cd81e2f73a16a0e52d598aeac2197f
+        uses: mikepenz/action-junit-report@3585e9575db828022551b4231f165eb59a0e74e3
         if: success() || failure()
         with:
           comment: true
