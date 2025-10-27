@@ -174,7 +174,7 @@ jobs:
           reporter: java-junit
 
       - name: Upload reports/ results
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: success() || failure()
         with:
           name: ${{ matrix.CMAKE_C_COMPILER }}-${{ matrix.CMAKE_CXX_COMPILER }}-${{ matrix.GCOV_EXECUTABLE || 'nocov' }}-${{ matrix.CMAKE_CXX_COMPILER_OFFLOAD || 'nooffload' }}
